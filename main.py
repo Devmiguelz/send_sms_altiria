@@ -22,7 +22,7 @@ def get_participants(sheet_url: str):
 # ---------------------------------
 # Función para enviar SMS usando SMS Chef
 # ---------------------------------
-def send_sms(secret: str, phone: str, message: str, sim: int = 1, mode: str = "devices"):
+def send_sms(secret: str, id_device: str, phone: str, message: str, sim: int = 1, mode: str = "devices"):
     """
     Envía un SMS usando la API de SMS Chef.
     """
@@ -32,6 +32,8 @@ def send_sms(secret: str, phone: str, message: str, sim: int = 1, mode: str = "d
         "mode": mode,
         "phone": phone,
         "message": message,
+        "device": id_device,
+        "gateway": '#2',
         "sim": sim
     }
 
@@ -53,6 +55,7 @@ if __name__ == "__main__":
     # URL de tu Google Sheets en formato CSV
     URL = "https://docs.google.com/spreadsheets/d/1eH4JdXV-uSmgjKpaoNXsE4JL_ksc9f5R6wuYt8n_rUg/export?format=csv"
     API_KEY = os.getenv("SMS_CHEF_API_KEY")
+    ID_DEVICE = os.getenv("ID_DEVICE")
 
     participantes = get_participants(URL)
 
@@ -77,5 +80,5 @@ if __name__ == "__main__":
         telefono = "+57" + p["Telefono"] 
         asignado = asignacion[quien]
 
-        mensaje = f"🎁 Hola {quien}, tu Amigo Dulce es {asignado}. ¡Guárdalo en secreto! 🤫🍫"
-        send_sms(API_KEY, telefono, mensaje)
+        mensaje = f"🎁 Hola {quien}, tu Amigo secreto es {asignado}. ¡Guárdalo en secreto! 🤫🍫"
+        send_sms(API_KEY, ID_DEVICE, telefono, mensaje)
