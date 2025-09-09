@@ -34,6 +34,7 @@ def send_sms(secret: str, id_device: str, phone: str, message: str, sim: int = 1
         "message": message,
         "device": id_device,
         "gateway": '#2',
+        "priority": '1',
         "sim": sim
     }
 
