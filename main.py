@@ -44,6 +44,11 @@ def get_sheet_data(sheet_url: str):
                 "Telefono": row['']
             })
 
+    # Data test
+    participantes = []
+    participantes.append({"Nombres": "Miguel Zambrano", "Telefono": "3005997373"})
+    participantes.append({"Nombres": "Milagro Prada", "Telefono": "3005997373"})
+
     return meta, participantes
 
 # ---------------------------------
@@ -82,25 +87,34 @@ def generar_mensaje_inicial(quien, asignado, meta):
     lugar = meta.get("LUGAR", "").lower()
 
     return (
-        f"Hola {quien}, tu Amigo Secreto es {asignado}.\n"
-        f"Recuerda que es el {fecha} en la dirección {lugar} "
-        f"y el regalo debe ser de {valor}.\n"
-        f"¡No lo olvides!"
+        f"Hola {quien}, te tocó {asignado}.\n"
+        f"Recuerda que es el {fecha} en la dirección {lugar}."
+        f"Regalo de {valor}."
     )
 
 # ---------------------------
 # Generar mensaje recordatorio
 # ---------------------------
 def generar_mensaje_recordatorio(quien, meta):
-    valor = meta.get("VALOR DEL REGALO", "").lower()
     fecha = meta.get("FECHA Y HORA", "").lower()
-    lugar = meta.get("LUGAR", "").lower()
 
     return (
         f"{quien}, listo para jugar Amigo Secreto.\n"
         f"¿Ya compraste el regalo? \n"
         f"Recuerda que nos vemos mañana {fecha}\n"
         f"¡No faltes!"
+    )
+
+# ---------------------------
+# Generar mensaje aviso de sorteo (solo distribución)
+# ---------------------------
+def generar_mensaje_sorteo(quien, meta):
+    hora = "4:00 pm"
+
+    return (
+        f"Hola {quien}, hoy se realizará el sorteo de Amigo Secreto.\n"
+        f"A las {hora} haremos la distribución de los nombres.\n"
+        f"Falta confirmar el lugar y la fecha.\n"
     )
 
 # ---------------------------------
@@ -155,8 +169,9 @@ def altiria_sms(api_key: str, api_secret: str, phone: str, message: str, debug: 
 if __name__ == "__main__":
 
     show_prints = True
-    send_messages = True
+    send_messages = False
     send_messages_reminder = False
+    send_messages_notify = True
 
     # URL de tu Google Sheets en formato CSV
     URL = "https://docs.google.com/spreadsheets/d/1eH4JdXV-uSmgjKpaoNXsE4JL_ksc9f5R6wuYt8n_rUg/export?format=csv"
@@ -175,9 +190,12 @@ if __name__ == "__main__":
         print("📋 Participantes:")
         for p in participantes:
             print(p)
+            
+    asignacion = {}
 
     # === HACER EL SORTEO (Amigo Dulce) ===
-    asignacion = hacer_sorteo(participantes)
+    if send_messages:
+        asignacion = hacer_sorteo(participantes)
 
     # === ENVIAR MENSAJES INICIALES ===
     if send_messages:
@@ -205,4 +223,18 @@ if __name__ == "__main__":
             if show_prints:
                 print(f"📩 {mensaje} → {telefono}")
 
+    # === ENVIAR MENSAJES AVISO DE SORTEO ===
+    if send_messages_notify:
+        for p in participantes:
+            quien = p["Nombres"]
+            telefono = "57" + p["Telefono"]
+
+            mensaje = generar_mensaje_sorteo(quien, meta)
+            altiria_sms(ALTIRIA_API_KEY, ALTIRIA_API_SECRET, telefono, mensaje)
+            print(f"📩 Notificación de sorteo a {telefono}:\n{mensaje}\n")
+
+            if show_prints:
+                print(f"📩 {mensaje} → {telefono}")
+
     print("✅ Mensajes enviados.")
+    exit(0)
