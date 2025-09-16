@@ -44,11 +44,6 @@ def get_sheet_data(sheet_url: str):
                 "Telefono": row['']
             })
 
-    # Data test
-    participantes = []
-    participantes.append({"Nombres": "Miguel Zambrano", "Telefono": "3005997373"})
-    participantes.append({"Nombres": "Milagro Prada", "Telefono": "3005997373"})
-
     return meta, participantes
 
 # ---------------------------------
