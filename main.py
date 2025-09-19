@@ -38,10 +38,20 @@ def get_sheet_data(sheet_url: str):
             if clave and valor:
                 meta[clave] = valor
         else:
-            # Guardar participantes
+            # Guardar participantes con nombre abreviado
+            nombre_completo = row['SORTEO AMIGO SECRETO 2025'].strip()
+            telefono = row['']
+
+            # Tomar solo el primer nombre y la inicial del apellido
+            partes = nombre_completo.split()
+            if len(partes) > 1:
+                nombre = f"{partes[0]} {partes[1][0]}."
+            else:
+                nombre = partes[0]
+
             participantes.append({
-                "Nombres": row['SORTEO AMIGO SECRETO 2025'],
-                "Telefono": row['']
+                "Nombres": nombre,
+                "Telefono": telefono
             })
 
     return meta, participantes
@@ -82,9 +92,7 @@ def generar_mensaje_inicial(quien, asignado, meta):
     lugar = meta.get("LUGAR", "").lower()
 
     return (
-        f"Hola {quien}, te tocó {asignado}.\n"
-        f"Recuerda que es el {fecha} en la dirección {lugar}."
-        f"Regalo de {valor}."
+        f"Hola {quien}, te tocó {asignado}."
     )
 
 # ---------------------------
@@ -103,13 +111,25 @@ def generar_mensaje_recordatorio(quien, meta):
 # ---------------------------
 # Generar mensaje aviso de sorteo (solo distribución)
 # ---------------------------
-def generar_mensaje_sorteo(quien, meta):
-    hora = "4:00 pm"
+def generar_mensaje_alerta():
+    #return (
+    #    f"El compartir sera donde la Sr. Yaneth.\n"
+    #    f"Adicional se solicita cuarenta mil pesos por pareja.\n"
+    #    f"Se recibe efectivo o Transf.\n"
+    #)
 
     return (
-        f"Hola {quien}, hoy se realizará el sorteo de Amigo Secreto.\n"
-        f"A las {hora} haremos la distribución de los nombres.\n"
-        f"Falta confirmar el lugar y la fecha.\n"
+        f"El regalo para tu amigo secreto debe ser de cincuenta mil pesos"
+    )
+
+# ---------------------------
+# Generar mensaje aviso minutos antes
+# ---------------------------
+def generar_mensaje_ultimo():
+    return (
+        "¡Atención!\n"
+        "Muy pronto comenzaremos con la asignación de nombres.\n"  
+        "Permanezcan atentos.\n"
     )
 
 # ---------------------------------
@@ -120,7 +140,7 @@ def altiria_sms(api_key: str, api_secret: str, phone: str, message: str, debug: 
     Envía un SMS usando Altiria API Key + Secret.
     """
     url = "https://www.altiria.net:8443/apirest/ws/sendSms"
-    headers = {"Content-Type": "application/json;charset=UTF-8"}
+    headers = {"Content-Type": "application/json"}
 
     payload = {
         "credentials": {"apiKey": api_key, "apiSecret": api_secret},
@@ -200,7 +220,7 @@ if __name__ == "__main__":
             asignado = asignacion[quien]
 
             mensaje = generar_mensaje_inicial(quien, asignado, meta)
-            altiria_sms(ALTIRIA_API_KEY, ALTIRIA_API_SECRET, telefono, mensaje)
+            #altiria_sms(ALTIRIA_API_KEY, ALTIRIA_API_SECRET, telefono, mensaje)
             if show_prints:
                 print(f"📩 {mensaje} → {telefono}")
 
@@ -212,7 +232,7 @@ if __name__ == "__main__":
             telefono = "57" + p["Telefono"]
 
             mensaje = generar_mensaje_recordatorio(quien, meta)
-            altiria_sms(ALTIRIA_API_KEY, ALTIRIA_API_SECRET, telefono, mensaje)
+            #altiria_sms(ALTIRIA_API_KEY, ALTIRIA_API_SECRET, telefono, mensaje)
             print(f"📩 Recordatorio a {telefono}:\n{mensaje}\n")
 
             if show_prints:
@@ -224,12 +244,11 @@ if __name__ == "__main__":
             quien = p["Nombres"]
             telefono = "57" + p["Telefono"]
 
-            mensaje = generar_mensaje_sorteo(quien, meta)
+            #mensaje = generar_mensaje_sorteo(quien, meta)
+            mensaje = generar_mensaje_alerta()
             altiria_sms(ALTIRIA_API_KEY, ALTIRIA_API_SECRET, telefono, mensaje)
-            print(f"📩 Notificación de sorteo a {telefono}:\n{mensaje}\n")
 
             if show_prints:
                 print(f"📩 {mensaje} → {telefono}")
 
     print("✅ Mensajes enviados.")
-    exit(0)
